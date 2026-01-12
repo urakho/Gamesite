@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Игровой сайт</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <header>
+        <h1>Добро пожаловать на Gamesite</h1>
+    </header>
+
+    <main>
+        <div id="game-container">
+            <div id="welcome-message">
+                <div class="game-preview">
+                    <h2>Flappy Bird</h2>
+                    <img src="FlappyBird/Flappy.png" alt="Flappy Bird Preview" class="game-image">
+                    <button class="play-btn" id="play-flappy-bird">Играть</button>
+                </div>
+                <div class="game-preview">
+                    <h2>Flappy Legacy</h2>
+                    <img src="Flappy Legacy/FlappyLegacy.png" alt="Flappy Legacy Preview" class="game-image">
+                    <button class="play-btn" id="play-flappy-legacy">Играть</button>
+                </div>
+                <div class="game-preview">
+                    <h2>Chicken Run</h2>
+                    <img src="ChickenRun/ChickenRun.png" alt="Chicken Run Preview" class="game-image">
+                    <button class="play-btn" id="play-chicken-run">Играть</button>
+                </div>
+                <div class="game-preview">
+                    <h2>Homo Sapiens</h2>
+                    <img src="HomoSapiens/HomoSapiens.png" alt="Homo Sapiens Preview" class="game-image">
+                    <button class="play-btn" id="play-homo-sapiens">Играть</button>
+                </div>
+            </div>
+
+            <div id="flappy-bird" class="game hidden">
+                <button id="exit-flappy-bird" class="exit-btn">×</button>
+                <iframe id="flappy-bird-iframe" width="100%" height="100%" frameborder="0" allowfullscreen></iframe>
+            </div>
+
+            <div id="chicken-run" class="game hidden">
+                <button id="exit-chicken-run" class="exit-btn">×</button>
+                <iframe id="chicken-run-iframe" width="100%" height="100%" frameborder="0" allowfullscreen></iframe>
+            </div>
+
+            <div id="flappy-legacy" class="game hidden">
+                <button id="exit-flappy-legacy" class="exit-btn">×</button>
+                <iframe id="flappy-legacy-iframe" width="100%" height="100%" frameborder="0" allowfullscreen></iframe>
+            </div>
+
+            <div id="homo-sapiens" class="game hidden">
+                <button id="exit-homo-sapiens" class="exit-btn">×</button>
+                <iframe id="homo-sapiens-iframe" width="100%" height="100%" frameborder="0" allowfullscreen></iframe>
+            </div>
+
+            <div id="tic-tac-toe" class="game hidden">
+                <h2>Крестики-нолики</h2>
+                <div class="board">
+                    <div class="cell" data-cell></div>
+                    <div class="cell" data-cell></div>
+                    <div class="cell" data-cell></div>
+                    <div class="cell" data-cell></div>
+                    <div class="cell" data-cell></div>
+                    <div class="cell" data-cell></div>
+                    <div class="cell" data-cell></div>
+                    <div class="cell" data-cell></div>
+                    <div class="cell" data-cell></div>
+                </div>
+                <button id="restart-tic-tac-toe">Начать заново</button>
+            </div>
+
+            <div id="snake" class="game hidden">
+                <h2>Змейка</h2>
+                <canvas id="snake-canvas" width="400" height="400"></canvas>
+                <p>Используйте стрелки для управления змейкой</p>
+            </div>
+
+            <div id="puzzle" class="game hidden">
+                <h2>Пазл</h2>
+                <div id="puzzle-container">
+                    <p>Пазл будет здесь</p>
+                </div>
+            </div>
+
+            <div id="memory" class="game hidden">
+                <h2>Игра на память</h2>
+                <div id="memory-board">
+                    <p>Карточки для игры на память будут здесь</p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="script.js"></script>
+</body>
+</html>
