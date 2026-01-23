@@ -951,10 +951,6 @@ function drawCaveBackground() {
 // Олень — коричневый круг
 
 
-// Куст как картинка
-const bushImg = new Image();
-bushImg.src = 'bush.png';
-
 function drawBush(x, y, durability = 10) {
     // Рисуем куст по центру x, y с учетом камеры
     const screenX = x - camera.x;

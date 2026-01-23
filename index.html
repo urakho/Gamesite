@@ -3,38 +3,133 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Игровой сайт</title>
+    <title>DXGF</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
     <header>
-        <h1>Добро пожаловать на Gamesite</h1>
+        <h1>DimensionX</h1>
+        <h2>GameFactory</h2>
+        <nav>
+            <button class="nav-tab active" data-tab="home">Главная</button>
+            <button class="nav-tab" data-tab="games">Онлайн-игры</button>
+            <button class="nav-tab" data-tab="minecraft">MINECRAFT</button>
+        </nav>
+        <div class="controls">
+            <div class="language-selector">
+                <button id="language-toggle" class="lang-btn">🇷🇺</button>
+            </div>
+            <div class="theme-selector">
+                <button id="theme-toggle" class="theme-btn">🌙</button>
+            </div>
+        </div>
     </header>
 
     <main>
-        <div id="game-container">
-            <div id="welcome-message">
-                <div class="game-preview">
-                    <h2>Flappy Bird</h2>
-                    <img src="FlappyBird/Flappy.png" alt="Flappy Bird Preview" class="game-image">
-                    <button class="play-btn" id="play-flappy-bird">Играть</button>
-                </div>
-                <div class="game-preview">
-                    <h2>Flappy Legacy</h2>
-                    <img src="Flappy Legacy/FlappyLegacy.png" alt="Flappy Legacy Preview" class="game-image">
-                    <button class="play-btn" id="play-flappy-legacy">Играть</button>
-                </div>
-                <div class="game-preview">
-                    <h2>Chicken Run</h2>
-                    <img src="ChickenRun/ChickenRun.png" alt="Chicken Run Preview" class="game-image">
-                    <button class="play-btn" id="play-chicken-run">Играть</button>
-                </div>
-                <div class="game-preview">
-                    <h2>Homo Sapiens</h2>
-                    <img src="HomoSapiens/HomoSapiens.png" alt="Homo Sapiens Preview" class="game-image">
-                    <button class="play-btn" id="play-homo-sapiens">Играть</button>
+        <div id="home-tab" class="tab-content active">
+            <!-- Hero section -->
+            <div class="hero-section-bottom">
+                <h2>DimensionX GameFactory — это фабрика цифровых миров.</h2>
+                <p>Здесь ты найдёшь онлайн-игры, уникальные проекты и эксклюзивные скины для Minecraft.</p>
+                <p>Мы создаём собственные игровые вселенные, экспериментируем с механиками и разрабатываем контент для игроков, которые любят новое, необычное и атмосферное.</p>
+                <p>На сайте тебя ждёт:<br>
+                🎮 Онлайн-игры прямо в браузере<br>
+                🧩 Уникальные игровые проекты<br>
+                🧍‍♂️ Авторские Minecraft-скины<br>
+                🌌 Вселенная NoClip и тематические карты<br>
+                ⚙️ Инди-разработка и эксперименты</p>
+                <p>DimensionX GameFactory — место, где измерения превращаются в игры.</p>
+            </div>
+        </div>
+
+        <div id="games-tab" class="tab-content">
+            <div id="game-container">
+                <h3>Все игры</h3>
+                <div id="welcome-message">
+                    <div class="game-preview">
+                        <h2>Flappy Bird</h2>
+                        <img src="online/FlappyBird/Flappy.png" alt="Flappy Bird Preview" class="game-image">
+                        <button class="play-btn" id="play-flappy-bird-games">Играть</button>
+                    </div>
+                    <div class="game-preview">
+                        <h2>Flappy Legacy</h2>
+                        <img src="online/Flappy Legacy/FlappyLegacy.png" alt="Flappy Legacy Preview" class="game-image">
+                        <button class="play-btn" id="play-flappy-legacy-games">Играть</button>
+                    </div>
+                    <div class="game-preview">
+                        <h2>Chicken Run</h2>
+                        <img src="online/ChickenRun/ChickenRun.png" alt="Chicken Run Preview" class="game-image">
+                        <button class="play-btn" id="play-chicken-run-games">Играть</button>
+                    </div>
+                    <div class="game-preview">
+                        <h2>Homo Sapiens</h2>
+                        <img src="online/HomoSapiens/HomoSapiens.png" alt="Homo Sapiens Preview" class="game-image">
+                        <button class="play-btn" id="play-homo-sapiens-games">Играть</button>
+                    </div>
                 </div>
             </div>
+        </div>
+
+        <div id="minecraft-tab" class="tab-content">
+            <h3>Minecraft Skins</h3>
+            <div id="minecraft-gallery">
+                <div class="skin-item">
+                    <img src="minecraft/Agony-slim.png" alt="Agony-slim" class="skin-image">
+                    <p>Agony-slim</p>
+                    <a href="minecraft/Agony-slim.png" download class="download-btn">Download</a>
+                </div>
+                <div class="skin-item">
+                    <img src="minecraft/Backrooms Exploler.png" alt="Backrooms Exploler" class="skin-image">
+                    <p>Backrooms Exploler</p>
+                    <a href="minecraft/Backrooms Exploler.png" download class="download-btn">Download</a>
+                </div>
+                <div class="skin-item">
+                    <img src="minecraft/Carnage.png" alt="Carnage" class="skin-image">
+                    <p>Carnage</p>
+                    <a href="minecraft/Carnage.png" download class="download-btn">Download</a>
+                </div>
+                <div class="skin-item">
+                    <img src="minecraft/EX-Mind.png" alt="EX-Mind" class="skin-image">
+                    <p>EX-Mind</p>
+                    <a href="minecraft/EX-Mind.png" download class="download-btn">Download</a>
+                </div>
+                <div class="skin-item">
+                    <img src="minecraft/Invisible.png" alt="Invisible" class="skin-image">
+                    <p>Invisible</p>
+                    <a href="minecraft/Invisible.png" download class="download-btn">Download</a>
+                </div>
+                <div class="skin-item">
+                    <img src="minecraft/Partygoer.png" alt="Partygoer" class="skin-image">
+                    <p>Partygoer</p>
+                    <a href="minecraft/Partygoer.png" download class="download-btn">Download</a>
+                </div>
+                <div class="skin-item">
+                    <img src="minecraft/Robocop.png" alt="Robocop" class="skin-image">
+                    <p>Robocop</p>
+                    <a href="minecraft/Robocop.png" download class="download-btn">Download</a>
+                </div>
+                <div class="skin-item">
+                    <img src="minecraft/Skin.png" alt="Skin" class="skin-image">
+                    <p>Skin</p>
+                    <a href="minecraft/Skin.png" download class="download-btn">Download</a>
+                </div>
+                <div class="skin-item">
+                    <img src="minecraft/Terminator.png" alt="Terminator" class="skin-image">
+                    <p>Terminator</p>
+                    <a href="minecraft/Terminator.png" download class="download-btn">Download</a>
+                </div>
+                <div class="skin-item">
+                    <img src="minecraft/Venom.png" alt="Venom" class="skin-image">
+                    <p>Venom</p>
+                    <a href="minecraft/Venom.png" download class="download-btn">Download</a>
+                </div>
+                <div class="skin-item">
+                    <img src="minecraft/Wretched.png" alt="Wretched" class="skin-image">
+                    <p>Wretched</p>
+                    <a href="minecraft/Wretched.png" download class="download-btn">Download</a>
+                </div>
+            </div>
+        </div>
 
             <div id="flappy-bird" class="game hidden">
                 <button id="exit-flappy-bird" class="exit-btn">×</button>
