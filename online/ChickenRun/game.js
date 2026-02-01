@@ -1,7 +1,8 @@
 // Игровые переменные
-let scene, camera, renderer, chicken, road, cars = [], particles = [];
+let scene, camera, renderer, chicken, road, cars = [], corn = [], particles = [];
+let chickenHat = null; // Шляпа курицы
 let gameState = 'menu'; // 'menu', 'playing', 'gameOver'
-let score = 0;
+let score = 0, cornCount = 0;
 let gameSpeed = 0.1;
 let chickenPosition = { x: 0, y: 0.5, z: 0 };
 let chickenVelocity = { x: 0, y: 0, z: 0 };
@@ -28,6 +29,7 @@ const ROAD_WIDTH = 6;
 const LANE_WIDTH = 2;
 const LANES = [-2, 0, 2]; // Позиции полос
 const CAR_SPAWN_DISTANCE = 20;
+const COIN_SPAWN_DISTANCE = 15;
 
 // Инициализация игры
 function init() {
@@ -60,6 +62,10 @@ function init() {
     // Создание курицы
     createChicken();
     
+    // Применяем сохраненную шляпу
+    const selectedHat = localStorage.getItem('chickenRunSelectedHat') || 'none';
+    applyHatToChicken(selectedHat);
+    
     // Обработчики событий
     setupEventListeners();
     
@@ -73,6 +79,16 @@ function loadSettings() {
     if (savedQuality) {
         graphicsQuality = savedQuality;
     }
+    
+    // Загружаем количество зерна
+    const savedCorn = localStorage.getItem('chickenRunCornCount');
+    if (savedCorn) {
+        cornCount = parseInt(savedCorn);
+    }
+    
+    // Загружаем выбранную шляпу
+    const selectedHat = localStorage.getItem('chickenRunSelectedHat') || 'none';
+    // Шляпа будет применена после создания курицы в init()
     
     // Обновляем кнопку качества в меню
     updateQualityButton();
@@ -893,6 +909,57 @@ function createBarrier(lane, distance) {
     scene.add(barrierGroup);
 }
 
+function createCorn(x, z) {
+    // Создаем группу для зерна кукурузы
+    const cornGroup = new THREE.Group();
+    
+    // Основной стебель кукурузы (желтый)
+    const stemGeometry = new THREE.CylinderGeometry(0.15, 0.15, 0.8, 8);
+    const stemMaterial = new THREE.MeshLambertMaterial({ color: 0xffdd44 }); // Светло-желтый
+    const stem = new THREE.Mesh(stemGeometry, stemMaterial);
+    stem.position.y = 0;
+    stem.castShadow = true;
+    cornGroup.add(stem);
+    
+    // Коричневые окончания (как у настоящей кукурузы)
+    const endGeometry = new THREE.CylinderGeometry(0.18, 0.18, 0.1, 8);
+    const endMaterial = new THREE.MeshLambertMaterial({ color: 0x8B4513 }); // Коричневый
+    const topEnd = new THREE.Mesh(endGeometry, endMaterial);
+    topEnd.position.y = 0.45;
+    cornGroup.add(topEnd);
+    
+    const bottomEnd = new THREE.Mesh(endGeometry, endMaterial);
+    bottomEnd.position.y = -0.45;
+    cornGroup.add(bottomEnd);
+    
+    // Зеленые листья
+    const leafGeometry = new THREE.PlaneGeometry(0.3, 0.6);
+    const leafMaterial = new THREE.MeshLambertMaterial({ 
+        color: 0x228B22, // Зеленый
+        side: THREE.DoubleSide,
+        transparent: true,
+        opacity: 0.8
+    });
+    
+    for (let i = 0; i < 3; i++) {
+        const leaf = new THREE.Mesh(leafGeometry, leafMaterial);
+        leaf.position.set(
+            Math.cos(i * Math.PI * 2 / 3) * 0.2,
+            0.1,
+            Math.sin(i * Math.PI * 2 / 3) * 0.2
+        );
+        leaf.rotation.x = Math.PI / 4;
+        leaf.rotation.z = i * Math.PI * 2 / 3;
+        cornGroup.add(leaf);
+    }
+    
+    cornGroup.position.set(x, 0.8, z);
+    cornGroup.userData = { rotationSpeed: 0.1 };
+    
+    corn.push(cornGroup);
+    scene.add(cornGroup);
+}
+
 // Высокое качество барьера - все детали
 function createHighQualityBarrier(barrierGroup) {
     // Металлическая основа
@@ -1338,6 +1405,11 @@ function updateChicken() {
     }
     
     chicken.children[0].rotation.x = Math.sin(Date.now() * 0.02) * 0.1; // Качание тела
+    
+    // Обновляем вечеринку если активна
+    if (chickenHat && chickenHat.userData.isParty) {
+        updatePartyHat(chickenHat);
+    }
 }
 
 function updateCars() {
@@ -1387,6 +1459,38 @@ function updateBarriers() {
         // Высота ограждения 1.2, поэтому если курица выше 1.5 - она перепрыгивает
         if (distance < 1.0 && chickenPosition.y < 1.5) {
             gameOver();
+        }
+    }
+}
+
+function updateCorn() {
+    for (let i = corn.length - 1; i >= 0; i--) {
+        const cornItem = corn[i];
+        cornItem.rotation.y += cornItem.userData.rotationSpeed;
+        // Движение вверх-вниз для зерна
+        cornItem.position.y = 1.0 + Math.sin(Date.now() * 0.01 + i) * 0.1;
+        
+        // Удаление зерна, которое значительно ушло за курицу
+        if (cornItem.position.z > chickenPosition.z + 20) {
+            scene.remove(cornItem);
+            corn.splice(i, 1);
+            continue;
+        }
+        
+        // Проверка сбора зерна
+        const distance = Math.sqrt(
+            Math.pow(cornItem.position.x - chickenPosition.x, 2) +
+            Math.pow(cornItem.position.z - chickenPosition.z, 2)
+        );
+        
+        if (distance < 0.8) {
+            // Сбор зерна
+            cornCount++;
+            scene.remove(cornItem);
+            corn.splice(i, 1);
+            
+            // Эффект сбора зерна
+            createCornEffect(cornItem.position);
         }
     }
 }
@@ -1503,7 +1607,7 @@ function checkRampCollision() {
     return targetHeight;
 }
 
-function createCoinEffect(position) {
+function createCornEffect(position) {
     const particleCount = 10;
     for (let i = 0; i < particleCount; i++) {
         const particleGeometry = new THREE.SphereGeometry(0.05);
@@ -1613,6 +1717,16 @@ function spawnBarriers() {
     }
 }
 
+function spawnCorn() {
+    if (Math.random() < 0.01) { // 17% шанс (в 3 раза меньше 50%)
+        // Выбираем случайную полосу для зерна
+        const lane = Math.floor(Math.random() * LANES.length);
+        const x = LANES[lane];
+        const z = chickenPosition.z - 5 - Math.random() * 10; // Впереди курицы (меньше z)
+        createCorn(x, z);
+    }
+}
+
 function spawnBuses() {
     const currentTime = Date.now();
     // Автобусы появляются редко - раз в 8 секунд (8000 миллисекунд)
@@ -1667,6 +1781,7 @@ function updateUI() {
             lastScoreTime = currentTime;
         }
         document.getElementById('score').textContent = score;
+        document.getElementById('corn').textContent = cornCount;
     }
 }
 
@@ -1677,6 +1792,7 @@ function gameOver() {
     saveHighScore(score);
     
     document.getElementById('finalScore').textContent = score;
+    document.getElementById('finalCorn').textContent = cornCount;
     document.getElementById('gameOver').style.display = 'block';
 }
 
@@ -1690,7 +1806,7 @@ function startGame() {
     
     // Сброс игровых переменных
     score = 0;
-    coinCount = 0;
+    cornCount = 0;
     gameSpeed = 0.1;
     chickenPosition = { x: 0, y: 0.5, z: 0 };
     chickenVelocity = { x: 0, y: 0, z: 0 };
@@ -1713,6 +1829,8 @@ function startGame() {
     brokenBuses = [];
     barriers.forEach(barrier => scene.remove(barrier));
     barriers = [];
+    corn.forEach(cornItem => scene.remove(cornItem));
+    corn = [];
     particles.forEach(particle => scene.remove(particle));
     particles = [];
     roadSegments.forEach(segment => scene.remove(segment));
@@ -1740,6 +1858,7 @@ function animate() {
         updateBuses();
         updateBrokenBuses();
         updateBarriers();
+        updateCorn();
         updateParticles();
         updateCamera();
         updateUI();
@@ -1747,6 +1866,7 @@ function animate() {
         spawnBuses();
         spawnBrokenBuses();
         spawnBarriers();
+        spawnCorn();
         
         // Убираем автоматическое увеличение скорости
         // gameSpeed += 0.0001;
@@ -1783,11 +1903,309 @@ function showSettings() {
     updateQualityButton();
 }
 
+function showShop() {
+    document.getElementById('mainMenu').classList.add('hidden');
+    document.getElementById('shopModal').classList.remove('hidden');
+    updateShopDisplay();
+}
+
+function closeShop() {
+    document.getElementById('shopModal').classList.add('hidden');
+    document.getElementById('mainMenu').classList.remove('hidden');
+}
+
+function updateShopDisplay() {
+    // Обновляем количество зерна
+    document.getElementById('shopCornCount').textContent = cornCount;
+    
+    // Загружаем купленные шляпы
+    const ownedHats = JSON.parse(localStorage.getItem('chickenRunOwnedHats')) || ['none'];
+    const selectedHat = localStorage.getItem('chickenRunSelectedHat') || 'none';
+    
+    // Обновляем состояние кнопок
+    document.querySelectorAll('.shop-item').forEach(item => {
+        const hatType = item.dataset.hat;
+        const buyButton = item.querySelector('.buy-button');
+        
+        // Сбрасываем классы
+        item.classList.remove('owned', 'selected');
+        
+        if (ownedHats.includes(hatType)) {
+            item.classList.add('owned');
+            if (hatType === selectedHat) {
+                item.classList.add('selected');
+                buyButton.textContent = 'Выбрано';
+            } else {
+                buyButton.textContent = 'Выбрать';
+            }
+        } else {
+            buyButton.textContent = 'Купить';
+        }
+    });
+}
+
+function buyHat(hatType) {
+    const ownedHats = JSON.parse(localStorage.getItem('chickenRunOwnedHats')) || ['none'];
+    
+    if (ownedHats.includes(hatType)) {
+        // Выбираем шляпу
+        localStorage.setItem('chickenRunSelectedHat', hatType);
+        updateShopDisplay();
+        applyHatToChicken(hatType);
+        return;
+    }
+    
+    // Проверяем стоимость
+    const prices = {
+        'none': 0,
+        'cowboy': 50,
+        'crown': 100,
+        'pirate': 75,
+        'party': 150
+    };
+    
+    const price = prices[hatType];
+    if (cornCount >= price) {
+        // Покупаем шляпу
+        cornCount -= price;
+        ownedHats.push(hatType);
+        localStorage.setItem('chickenRunOwnedHats', JSON.stringify(ownedHats));
+        localStorage.setItem('chickenRunSelectedHat', hatType);
+        updateShopDisplay();
+        applyHatToChicken(hatType);
+        
+        // Сохраняем количество зерна
+        localStorage.setItem('chickenRunCornCount', cornCount);
+    } else {
+        alert('Недостаточно зерна!');
+    }
+}
+
+function applyHatToChicken(hatType) {
+    // Удаляем старую шляпу
+    if (chickenHat) {
+        chicken.remove(chickenHat);
+    }
+    
+    // Создаем новую шляпу
+    if (hatType === 'none') {
+        chickenHat = null;
+        return;
+    }
+    
+    chickenHat = createHat(hatType);
+    chicken.add(chickenHat);
+}
+
+function createHat(hatType) {
+    const hatGroup = new THREE.Group();
+    
+    switch(hatType) {
+        case 'cowboy':
+            // Ковбойская шляпа - скорректирована для наклоненной курицы
+            const brimGeometry = new THREE.CylinderGeometry(0.7, 0.7, 0.05, 12);
+            const brimMaterial = new THREE.MeshLambertMaterial({ color: 0x8B4513 });
+            const brim = new THREE.Mesh(brimGeometry, brimMaterial);
+            brim.position.set(0, 1.15, 0.1);
+            hatGroup.add(brim);
+            
+            const crownGeometry = new THREE.CylinderGeometry(0.4, 0.5, 0.2, 10);
+            const crownMaterial = new THREE.MeshLambertMaterial({ color: 0x654321 });
+            const crown = new THREE.Mesh(crownGeometry, crownMaterial);
+            crown.position.set(0, 1.25, 0.1);
+            hatGroup.add(crown);
+            break;
+            
+        case 'crown':
+            // Корона с зубцами - на голове наклоненной курицы
+            const crownBaseGeometry = new THREE.CylinderGeometry(0.5, 0.35, 0.15, 8);
+            const crownBaseMaterial = new THREE.MeshLambertMaterial({ color: 0xFFD700 });
+            const crownBase = new THREE.Mesh(crownBaseGeometry, crownBaseMaterial);
+            crownBase.position.set(0, 1.2, 0.1);
+            hatGroup.add(crownBase);
+            
+            // Зубцы короны
+            for (let i = 0; i < 8; i++) {
+                const toothGeometry = new THREE.ConeGeometry(0.08, 0.15, 4);
+                const toothMaterial = new THREE.MeshLambertMaterial({ color: 0xFFD700 });
+                const tooth = new THREE.Mesh(toothGeometry, toothMaterial);
+                const angle = (i / 8) * Math.PI * 2;
+                tooth.position.set(
+                    Math.cos(angle) * 0.45,
+                    1.3,
+                    Math.sin(angle) * 0.45 + 0.1
+                );
+                tooth.rotation.x = Math.PI;
+                hatGroup.add(tooth);
+            }
+            
+            // Кристаллы на короне
+            for (let i = 0; i < 5; i++) {
+                const crystalGeometry = new THREE.OctahedronGeometry(0.05);
+                const crystalMaterial = new THREE.MeshLambertMaterial({ 
+                    color: Math.random() > 0.5 ? 0xFF1493 : 0x00BFFF,
+                    transparent: true,
+                    opacity: 0.8
+                });
+                const crystal = new THREE.Mesh(crystalGeometry, crystalMaterial);
+                const angle = (i / 5) * Math.PI * 2;
+                crystal.position.set(
+                    Math.cos(angle) * 0.4,
+                    1.25,
+                    Math.sin(angle) * 0.4 + 0.1
+                );
+                hatGroup.add(crystal);
+            }
+            break;
+            
+        case 'pirate':
+            // Волшебная шляпа волшебника с магическими элементами
+            const wizardBaseGeometry = new THREE.CylinderGeometry(0.6, 0.4, 0.4, 12);
+            const wizardBaseMaterial = new THREE.MeshLambertMaterial({ color: 0x4B0082 });
+            const wizardBase = new THREE.Mesh(wizardBaseGeometry, wizardBaseMaterial);
+            wizardBase.position.set(0, 1.25, 0.1);
+            hatGroup.add(wizardBase);
+            
+            // Широкие поля шляпы
+            const wizardBrimGeometry = new THREE.CylinderGeometry(0.9, 0.9, 0.03, 16);
+            const wizardBrimMaterial = new THREE.MeshLambertMaterial({ color: 0x2F1B2F });
+            const wizardBrim = new THREE.Mesh(wizardBrimGeometry, wizardBrimMaterial);
+            wizardBrim.position.set(0, 1.1, 0.1);
+            hatGroup.add(wizardBrim);
+            
+            // Магическая звезда наверху
+            const starGeometry = new THREE.OctahedronGeometry(0.12);
+            const starMaterial = new THREE.MeshLambertMaterial({ 
+                color: 0xFFD700,
+                transparent: true,
+                opacity: 0.9
+            });
+            const star = new THREE.Mesh(starGeometry, starMaterial);
+            star.position.set(0, 1.45, 0.1);
+            hatGroup.add(star);
+            
+            // Магические руны вокруг основания
+            for (let i = 0; i < 6; i++) {
+                const runeGeometry = new THREE.TorusGeometry(0.08, 0.02, 8, 16);
+                const runeMaterial = new THREE.MeshLambertMaterial({ 
+                    color: Math.random() > 0.5 ? 0xFF1493 : 0x00BFFF,
+                    transparent: true,
+                    opacity: 0.7
+                });
+                const rune = new THREE.Mesh(runeGeometry, runeMaterial);
+                const angle = (i / 6) * Math.PI * 2;
+                rune.position.set(
+                    Math.cos(angle) * 0.55,
+                    1.25,
+                    Math.sin(angle) * 0.55 + 0.1
+                );
+                rune.rotation.x = Math.PI / 2;
+                hatGroup.add(rune);
+            }
+            
+            // Волшебный кристалл сбоку
+            const crystalGeometry = new THREE.OctahedronGeometry(0.06);
+            const crystalMaterial = new THREE.MeshLambertMaterial({ 
+                color: 0xFF1493,
+                transparent: true,
+                opacity: 0.8
+            });
+            const crystal = new THREE.Mesh(crystalGeometry, crystalMaterial);
+            crystal.position.set(0.35, 1.3, 0.1);
+            hatGroup.add(crystal);
+            break;
+            
+        case 'party':
+            // Бесконечная вечеринка с хлопушками
+            hatGroup.userData.isParty = true;
+            hatGroup.userData.partyParticles = [];
+            
+            // Создаем начальные частицы
+            for (let i = 0; i < 350; i++) {
+                createPartyParticle(hatGroup);
+            }
+            break;
+    }
+    
+    return hatGroup;
+}
+
+function createPartyParticle(parentGroup) {
+    const colors = [0xff0000, 0x00ff00, 0x0000ff, 0xffff00, 0xff00ff, 0x00ffff, 0xffa500, 0x800080];
+    const particleGeometry = new THREE.SphereGeometry(0.05);
+    const particleMaterial = new THREE.MeshLambertMaterial({ 
+        color: colors[Math.floor(Math.random() * colors.length)],
+        transparent: true,
+        opacity: 0.9
+    });
+    const particle = new THREE.Mesh(particleGeometry, particleMaterial);
+    
+    // Случайная позиция вокруг курицы
+    const angle = Math.random() * Math.PI * 2;
+    const distance = 0.5 + Math.random() * 1.5;
+    const height = 0.3 + Math.random() * 1.2;
+    
+    particle.position.set(
+        Math.cos(angle) * distance,
+        height,
+        Math.sin(angle) * distance
+    );
+    
+    // Случайная скорость
+    particle.userData.velocity = {
+        x: (Math.random() - 0.5) * 0.1,
+        y: Math.random() * 0.05 + 0.02,
+        z: (Math.random() - 0.5) * 0.1
+    };
+    
+    particle.userData.life = 1.0;
+    particle.userData.maxLife = 2.0 + Math.random() * 2.0;
+    
+    parentGroup.add(particle);
+    parentGroup.userData.partyParticles.push(particle);
+}
+
+function updatePartyHat(hatGroup) {
+    if (!hatGroup.userData.isParty) return;
+    
+    const particles = hatGroup.userData.partyParticles;
+    
+    for (let i = particles.length - 1; i >= 0; i--) {
+        const particle = particles[i];
+        
+        // Обновляем позицию
+        particle.position.x += particle.userData.velocity.x;
+        particle.position.y += particle.userData.velocity.y;
+        particle.position.z += particle.userData.velocity.z;
+        
+        // Добавляем гравитацию
+        particle.userData.velocity.y -= 0.005;
+        
+        // Уменьшаем жизнь
+        particle.userData.life -= 0.02;
+        
+        // Обновляем прозрачность
+        particle.material.opacity = particle.userData.life;
+        
+        // Удаляем мертвые частицы
+        if (particle.userData.life <= 0) {
+            hatGroup.remove(particle);
+            particles.splice(i, 1);
+        }
+    }
+    
+    // Создаем новые частицы
+    if (particles.length < 36 && Math.random() < 0.3) {
+        createPartyParticle(hatGroup);
+    }
+}
+
 function backToMainMenu() {
     // Скрываем все экраны
     document.getElementById('instructionsScreen').classList.add('hidden');
     document.getElementById('highScoresScreen').classList.add('hidden');
     document.getElementById('settingsScreen').classList.add('hidden');
+    document.getElementById('shopModal').classList.add('hidden');
     document.getElementById('gameOver').style.display = 'none';
     
     // Показываем главное меню

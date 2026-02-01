@@ -291,6 +291,146 @@
         button:not(.menu-button):hover {
             background: #ff8c42;
         }
+
+        /* Стили для модального окна магазина */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 1000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 15px;
+            width: 90%;
+            max-width: 600px;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+
+        .modal-header h2 {
+            margin: 0;
+            color: #333;
+            font-size: 24px;
+        }
+
+        .close-button {
+            font-size: 28px;
+            cursor: pointer;
+            color: #666;
+            transition: color 0.3s;
+        }
+
+        .close-button:hover {
+            color: #ff6b35;
+        }
+
+        .modal-body {
+            padding: 20px;
+        }
+
+        .corn-display {
+            text-align: center;
+            margin-bottom: 20px;
+            padding: 15px;
+            background: linear-gradient(45deg, #ffeb3b, #ffc107);
+            border-radius: 10px;
+            color: #333;
+        }
+
+        .corn-display h3 {
+            margin: 0;
+            font-size: 18px;
+        }
+
+        .shop-items {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+        }
+
+        .shop-item {
+            background: #f9f9f9;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            padding: 15px;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .shop-item:hover {
+            border-color: #ff6b35;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .hat-preview {
+            font-size: 40px;
+            margin-bottom: 10px;
+        }
+
+        .hat-name {
+            font-weight: bold;
+            margin-bottom: 5px;
+            color: #333;
+        }
+
+        .hat-price {
+            color: #ff6b35;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .buy-button {
+            background: linear-gradient(45deg, #4caf50, #66bb6a);
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+
+        .buy-button:hover {
+            background: linear-gradient(45deg, #66bb6a, #81c784);
+            transform: scale(1.05);
+        }
+
+        .buy-button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .shop-item.owned .buy-button {
+            background: linear-gradient(45deg, #2196f3, #42a5f5);
+        }
+
+        .shop-item.owned .buy-button:hover {
+            background: linear-gradient(45deg, #42a5f5, #64b5f6);
+        }
+
+        .shop-item.selected {
+            border-color: #ff6b35;
+            background: linear-gradient(45deg, #fff3e0, #ffcc02);
+        }
     </style>
 </head>
 <body>
@@ -298,10 +438,11 @@
         <!-- Главное меню -->
         <div id="mainMenu">
             <h1>🐔 CHICKEN RUN 🐔</h1>
-            <div class="subtitle">Беги, курица, беги! Избегай препятствий и набирай очки!</div>
+            <div class="subtitle">Беги, курица, беги! Избегай препятствий и собирай зерно!</div>
             
             <div class="menu-buttons">
                 <button class="menu-button" onclick="startGame()">🚀 СТАРТ</button>
+                <button class="menu-button" onclick="showShop()">🛒 Магазин</button>
                 <button class="menu-button" onclick="showInstructions()">🎮 Как играть</button>
                 <button class="menu-button" onclick="showHighScores()">🏆 Рекорды</button>
                 <button class="menu-button" onclick="showSettings()">⚙️ Настройки</button>
@@ -312,7 +453,7 @@
                 <div class="controls-info">
                     <h3>🎯 Цель игры:</h3>
                     <p>• Избегайте машины, автобусы и препятствия<br>
-                       • Набирайте очки за время игры<br>
+                       • Собирайте зерно кукурузы<br>
                        • Прыгайте на автобусы и используйте пандусы<br>
                        • Продержитесь как можно дольше!</p>
                 </div>
@@ -336,7 +477,8 @@
                     <strong>🚌💥 Сломанные автобусы</strong> - используйте как пандус!</p>
                     
                     <h3>💰 Бонусы:</h3>
-                    <p><strong>⏰ Время</strong> - +1 очко каждую секунду</p>
+                    <p><strong>🌽 Зерно кукурузы</strong> - собирайте зерно для покупок<br>
+                    <strong>⏰ Время</strong> - +1 очко каждую секунду</p>
                 </div>
                 <button class="menu-button" onclick="backToMainMenu()">🔙 Назад</button>
             </div>
@@ -373,11 +515,12 @@
         
         <div id="ui">
             <div>Счет: <span id="score">0</span></div>
+            <div>Зерно: <span id="corn">0</span></div>
         </div>
         
         <div id="startScreen" class="hidden">
             <h1>🐔 Chicken Run 🐔</h1>
-            <p>Помогите курице избежать машин и набрать максимальный счет!</p>
+            <p>Помогите курице избежать машин и собрать зерно кукурузы!</p>
             <button onclick="startGame()">Начать игру</button>
             <div style="margin-top: 20px; font-size: 14px;">
                 <p>Управление:</p>
@@ -389,6 +532,7 @@
         <div id="gameOver">
             <h2>Игра окончена!</h2>
             <p>Финальный счет: <span id="finalScore">0</span></p>
+            <p>Собрано зерна: <span id="finalCorn">0</span></p>
             <div style="margin-top: 20px;">
                 <button class="menu-button" onclick="restartGame()" style="margin: 10px;">Играть снова</button>
                 <button class="menu-button" onclick="backToMainMenu()" style="margin: 10px;">Главное меню</button>
@@ -397,6 +541,53 @@
         
         <div id="controls">
             <div>A/D - влево/вправо | Пробел - прыжок</div>
+        </div>
+    </div>
+
+    <!-- Модальное окно магазина -->
+    <div id="shopModal" class="modal hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>🛒 Магазин</h2>
+                <span class="close-button" onclick="closeShop()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="corn-display">
+                    <h3>🌽 Ваше зерно: <span id="shopCornCount">0</span></h3>
+                </div>
+                <div class="shop-items">
+                    <div class="shop-item" data-hat="none">
+                        <div class="hat-preview">🐔</div>
+                        <div class="hat-name">Без шляпы</div>
+                        <div class="hat-price">Бесплатно</div>
+                        <button class="buy-button" onclick="buyHat('none')">Выбрать</button>
+                    </div>
+                    <div class="shop-item" data-hat="cowboy">
+                        <div class="hat-preview">🤠</div>
+                        <div class="hat-name">Ковбойская шляпа</div>
+                        <div class="hat-price">50 🌽</div>
+                        <button class="buy-button" onclick="buyHat('cowboy')">Купить</button>
+                    </div>
+                    <div class="shop-item" data-hat="crown">
+                        <div class="hat-preview">👑</div>
+                        <div class="hat-name">Корона</div>
+                        <div class="hat-price">100 🌽</div>
+                        <button class="buy-button" onclick="buyHat('crown')">Купить</button>
+                    </div>
+                    <div class="shop-item" data-hat="pirate">
+                        <div class="hat-preview">🧙‍♂️</div>
+                        <div class="hat-name">Волшебная шляпа</div>
+                        <div class="hat-price">75 🌽</div>
+                        <button class="buy-button" onclick="buyHat('pirate')">Купить</button>
+                    </div>
+                    <div class="shop-item" data-hat="party">
+                        <div class="hat-preview">🎉</div>
+                        <div class="hat-name">Вечеринка</div>
+                        <div class="hat-price">150 🌽</div>
+                        <button class="buy-button" onclick="buyHat('party')">Купить</button>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
